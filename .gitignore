@@ -1,0 +1,12 @@
+build/
+*.nex
+*.o
+*.a
+upstream/
+
+.idea/
+.vscode/
+*.swp
+
+.DS_Store
+Thumbs.db
