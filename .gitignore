@@ -2,7 +2,6 @@ build/
 *.nex
 *.o
 *.a
-upstream/
 
 .idea/
 .vscode/

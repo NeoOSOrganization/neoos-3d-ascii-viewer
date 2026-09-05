@@ -1,23 +1,21 @@
 #!/bin/bash
-# 3D ASCII Viewer smoke test for NeoOS
-# Runs after /3d-ascii-viewer.nex is installed in the OS image
-
+# Host-side smoke test: verifies the build artifact's shape. Full
+# interactive validation (renders a model, exits cleanly, no missing
+# syscalls) happens inside a NeoOS boot -- see neoos-kernel's
+# ports-smoke-test / the monorepo's `make ports-test` for the pattern.
 set -e
 
-echo "=== 3D ASCII Viewer Smoke Test ==="
+BIN="${1:-build/3d-ascii-viewer.nex}"
 
-# Test: viewer can start
-/3d-ascii-viewer --help > /tmp/test.txt 2>&1 || {
-    echo "FAILED: viewer startup"
-    exit 1
-}
+[ -f "$BIN" ] || { echo "FAILED: $BIN missing"; exit 1; }
 
-# Test: help output contains expected keywords
-grep -q "viewer\|model\|rotate" /tmp/test.txt || {
-    echo "FAILED: help output missing keywords"
-    cat /tmp/test.txt
-    exit 1
-}
-
-echo "PASSED: 3D ASCII Viewer basic functionality"
-exit 0
+python3 - "$BIN" <<'EOF'
+import sys
+with open(sys.argv[1], "rb") as f:
+    data = f.read(20)
+assert data[1:4] == b"ELF", f"not an ELF file: {data[1:4]!r}"
+assert data[4] == 2, "not ELF64"
+e_type = int.from_bytes(data[16:18], "little")
+assert e_type == 2, f"not an executable (e_type={e_type})"
+print("smoke-test: OK -- ELF64 executable")
+EOF
