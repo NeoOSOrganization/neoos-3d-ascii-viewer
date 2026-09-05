@@ -18,11 +18,12 @@ jobs:
         run: neoos-kernel-ref/toolchain/build.sh
       - name: checkout and build neoos-musl
         run: |
+          KERNEL_REF_ABS="$(cd neoos-kernel-ref && pwd)"
           git config --global protocol.git.allow always
           git clone --depth 1 https://github.com/NeoOSOrganization/neoos-musl ../neoos-musl
           (cd ../neoos-musl && git submodule update --init upstream)
           export PATH="$HOME/opt/cross-x86_64-elf/bin:$PATH"
-          (cd ../neoos-musl && make KERNEL_SHIM_DIR=$(pwd)/../neoos-kernel-ref/third_party/shim)
+          (cd ../neoos-musl && make KERNEL_SHIM_DIR="$KERNEL_REF_ABS/third_party/shim")
       - name: build
         run: |
           export PATH="$HOME/opt/cross-x86_64-elf/bin:$PATH"
